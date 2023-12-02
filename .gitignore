@@ -1,4 +1,6 @@
-.exe
-.pdb
+*.exe
+*.pdb
 coc-settings.json
 .vim
+obj/
+bin/
