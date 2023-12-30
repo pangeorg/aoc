@@ -17,28 +17,6 @@ def read_file(filename):
 
     return hands, bids
 
-def hand_to_counts(hand):
-    from collections import defaultdict
-
-    assert len(hand) == 5
-
-    counts = defaultdict(lambda : 0)
-    for card in hand:
-        counts[card] += 1
-    return counts
-
-def five_of_a_kind(counts):
-    return len(counts.keys()) == 1
-
-def four_of_a_kind(counts):
-    return len(counts.keys()) == 2
-
-def full_house(counts):
-    return list(sorted(counts.values())) == [2, 3]
-
-def three_of_a_kind(counts):
-    return list(sorted(counts.values())) == [1, 1, 3]
-
 def hand_strength(hand):
     c = tuple(reversed(sorted(Counter(hand).values())))
     points = [card_points[c] for c in hand]
@@ -57,58 +35,27 @@ def hand_strength(hand):
     
     return (0, points)
 
-def two_pair(counts):
-    pairs = 0
-    for v in counts.values():
-        if v == 2:
-            pairs += 1
-    return pairs == 2
-    
-def one_pair(counts):
-    for v in counts.values():
-        if v == 2:
-            return True
-    return False
+def hand_strength2(hand):
+    strength = hand_strength(hand=hand)
+    jpos = []
+    for i in range(len(hand)):
+        if hand[i] == "J":
+            jpos.append(i)
+    if jpos:
+        new_hand = list(hand)
+        for j in jpos:
+            for card in cards:
+                new_hand[j] = card
+                new_strength = hand_strength("".join(new_hand))
+                if new_strength > strength:
+                    strength = new_strength
+        for card in cards:
+            new_hand = hand.replace("J", card)
+            new_strength = hand_strength(new_hand)
+            if new_strength > strength:
+                strength = new_strength
 
-def high_card(counts):
-    return len(counts.keys()) == 5
-
-
-fs = {"five": five_of_a_kind, 
-      "four": four_of_a_kind, 
-      "full house": full_house, 
-      "three": three_of_a_kind,
-      "two_pair": two_pair, 
-      "one_pair": one_pair, 
-      "high_card": high_card}
-
-def check_hand(hand):
-    counts = hand_to_counts(hand)
-    for k, v in fs.items():
-        if v(counts):
-            print(hand, k)
-            break
-
-
-def compare(hand1, hand2):
-    counts1, counts2 = hand_to_counts(hand1), hand_to_counts(hand2)
-    for _, v in fs.items():
-        has_hand1 = v(counts1)
-        has_hand2 = v(counts2)
-        if has_hand1 and not has_hand2:
-            return 1
-        if has_hand2 and not has_hand1:
-            return -1
-
-    for h1, h2 in zip(hand1, hand2):
-        if card_points[h1] == card_points[h2]:
-            continue
-        if card_points[h1] > card_points[h2]:
-            return 1
-        if card_points[h1] < card_points[h2]:
-            return -1
-    return 0
-
+    return strength
 
 def solve_1(hands, bids):
     hands = [(h, int(b),) for h, b in zip(hands, bids,)]
@@ -123,8 +70,18 @@ def solve_1(hands, bids):
         total += winning
     print(total)
 
-def solve_2():
-    pass
+def solve_2(hands, bids):
+    hands = [(h, int(b),) for h, b in zip(hands, bids,)]
+    hands.sort(key=lambda play: hand_strength2(play[0]))
+
+    total = 0
+    for i in range(len(hands)):
+        hand, bid = hands[i]
+        rank = i + 1
+        winning = rank * bid
+        print(hand, rank, bid, winning)
+        total += winning
+    print(total)
 
 DAY = 7
 test = False
@@ -135,7 +92,8 @@ else:
 
 hands, bids = read_file(filename)
 
-solve_1(hands, bids)
+# solve_1(hands, bids)
+solve_2(hands, bids)
 
 
 
