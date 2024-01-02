@@ -22,22 +22,25 @@ def find_animal(lines):
                 return x, y
     return 0, 0
 
-def solve_1(lines):
+def get_loop(lines):
     x, y = find_animal(lines)
     print(f"Animal found at {x}, {y}")
-    firstx, firsty = x, y
 
     # check where to go first
     tile = ""
     d = (0, 0)
+    loop = [(x, y,)]
     for d in dirs:
         lookx, looky = x + d[0], y + d[1]
-        tile = lines[looky][lookx]
-        if tile in tiles.keys():
-            x, y = lookx, looky 
-            break
+        if 0 <= lookx < len(lines[0]) and 0 <= looky < len(lines):
+            tile = lines[looky][lookx]
+            if tile in tiles:
+                d1, d2 = tiles[tile]
+                if d1 == (-d[0], -d[1]) or d2 == (-d[0], -d[1]):
+                    x, y = lookx, looky 
+                    loop.append((x, y,))
+                    break
 
-    l = 1
     while True:   
         d1, d2 = tiles[tile]
         if d1 == (-d[0], -d[1]):
@@ -46,63 +49,107 @@ def solve_1(lines):
             d = d1
         x, y = x + d[0], y + d[1]
         tile = lines[y][x]
-        l += 1
-        if x == firstx and y == firsty:
+        if tile == "S":
             break
-    print(l // 2)
-        
-def solve_1_working(filename):
-    from collections import deque
+        loop.append((x, y,))
+    return loop
 
-    grid = open(filename).read().strip().splitlines()
+def is_in_loop(origin, loop, xmax, ymax, lines):
+    """
+    Cast rays in 4 directions and check how often we cross the loop
+    https://en.wikipedia.org/wiki/Point_in_polygon
+    """
+    is_inside = []
 
-    for r, row in enumerate(grid):
-        for c, ch in enumerate(row):
-            if ch == "S":
-                sr = r
-                sc = c
+    for d in dirs:
+        crossings = 0
+        was_on_loop = False
+        print(f"checking dir, {d}")
+        x, y = origin
+        while True:
+            if x < 0 or x == xmax or y < 0 or y == ymax:
                 break
-        else:
-            continue
-        break
+            on_loop = (x, y,) in loop
+            print(f"checking {x},{y} {on_loop}")
+            tile = lines[y][x]
+            if was_on_loop and not on_loop:
+                crossings += 1
+            # check if we just are following the loop 
+            if was_on_loop and on_loop:
+                d1, d2 = tiles[tile]
+                if d not in [d1, d2, (-d1[0], -d1[1],), (-d2[0], -d2[1],)]:
+                    # perpendicular crossing
+                    crossings += 1
+            x, y = x + d[0], y + d[1]
+            was_on_loop = on_loop
+        # crossings -= 1
+        # crossings = max(0, crossings)
+        print(f"Crossings: {crossings}")
+        is_inside.append(crossings % 2 != 0 and crossings != 0)
+    print(is_inside)
+    return all(is_inside)
 
-    loop = {(sr, sc)}
-    q = deque([(sr, sc)])
+def winding_number(origin, loop):
+    wind = 0
+    n = len(loop)
+    o = origin
+    for i in range(n):
+        p = loop[i]
+        q = loop[(i+1)%n]
+        delta = (p[0] - o[0])*(q[1] - o[1]) - (p[1] - o[1])*(q[0] - o[0])
+        if p[0] <= o[0] < q[0] and delta > 0:
+            wind += 1
+        elif q[0] <= o[0] < p[0] and delta < 0:
+            wind -= 1
+    return wind
 
-    while q:
-        r, c = q.popleft()
-        ch = grid[r][c]
 
-        if r > 0 and ch in "S|JL" and grid[r - 1][c] in "|7F" and (r - 1, c) not in loop:
-            loop.add((r - 1, c))
-            q.append((r - 1, c))
-            
-        if r < len(grid) - 1 and ch in "S|7F" and grid[r + 1][c] in "|JL" and (r + 1, c) not in loop:
-            loop.add((r + 1, c))
-            q.append((r + 1, c))
-
-        if c > 0 and ch in "S-J7" and grid[r][c - 1] in "-LF" and (r, c - 1) not in loop:
-            loop.add((r, c - 1))
-            q.append((r, c - 1))
-
-        if c < len(grid[r]) - 1 and ch in "S-LF" and grid[r][c + 1] in "-J7" and (r, c + 1) not in loop:
-            loop.add((r, c + 1))
-            q.append((r, c + 1))
-
+def solve_1(lines):
+    loop = get_loop(lines)
     print(len(loop) // 2)
 
-def solve_2():
-    pass
+
+def solve_2(lines):
+    loop = get_loop(lines)
+    print(f"Loop with len {len(loop)}")
+    xmax, ymax = len(lines[0]), len(lines)
+    inner_points = []
+    for x in range(xmax):
+        for y in range(ymax):
+            if not (x, y) in loop:
+                w = winding_number((x, y,), loop)
+                inside = w % 2 != 0
+                if inside:
+                    inner_points.append((lines[y][x], y, x))
+    # x, y = 2, 4
+    # inside = is_in_loop((x, y,), loop, xmax, ymax, lines)
+    # if inside:
+    #     inner_points.append((lines[y][x], y, x))
+    print(len(inner_points))
+    print(inner_points)
 
 DAY = 10
-test = True
-if test:
-    filename = "../data/sample-{:02d}.txt".format(DAY)
+test = False
+part = 2
+
+if part == 1:
+    if test:
+        filename = "../data/sample-{:02d}.txt".format(DAY)
+    else:
+        filename = "../data/day-{:02d}.txt".format(DAY)
 else:
-    filename = "../data/day-{:02d}.txt".format(DAY)
+    if test:
+        filename = "../data/sample-{:02d}_02.txt".format(DAY)
+    else:
+        filename = "../data/day-{:02d}.txt".format(DAY)
 
 lines = read_file(filename)
-for l in lines:
-    print(l)
-solve_1(lines)
-solve_1_working(filename)
+# loop = get_loop(lines)
+# xmax, ymax = len(lines[0]), len(lines)
+# for l in lines:
+#     print(l)
+
+if part == 1:
+    solve_1(lines)
+else:
+    solve_2(lines)
