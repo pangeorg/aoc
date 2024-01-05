@@ -19,8 +19,18 @@ def read_lines_groups(filename, pattern="\n\n"):
     blocks = read_filestr(filename).split(pattern)
     return [b.splitlines() for b in blocks]
 
-def transpose_grid(lines):
-    return list(zip(*lines))
+def grid_transpose(lines):
+    return list(list(x) for x in zip(*lines))
+
+def grid_rotate_right(lines):
+    return [list(reversed(x)) for x in zip(*lines)]
+
+def grid_rotate_left(lines):
+    return list(reversed([list(x) for x in zip(*lines)]))
+
+def take_step(point: tuple[int, int], direction: tuple[int, int]):
+    return (point[0] + direction[0], point[1] + direction[1],)
+
 
 class LineGrid:
     def __init__(self, lines):
@@ -32,6 +42,7 @@ class LineGrid:
         self.height = len(lines)
 
     def __getitem__(self, coords):
+        """ assumes x, y coordinates where 0,0 is top-left corner"""
         return self.lines[coords[1]][coords[0]]
 
     def __repr__(self):
@@ -56,9 +67,7 @@ class LineGrid:
         return r
 
     def transpose(self):
-        t = transpose_grid(self.lines)
-        for i in range(len(t)):
-            t[i] = "".join(t[i])
+        t = grid_transpose(self.lines)
         try:
             return LineGrid(t)
         except:
