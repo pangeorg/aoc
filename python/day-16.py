@@ -1,8 +1,8 @@
 from utils import *
 
-def solve_1(lines):
+def run(lines, start, verbose=False):
     grid = LineGrid(lines)
-    pos, d = (0, 0,), S
+    pos, d = start
     # beam list of positions and current direction
     beams = [(pos, d)]
     visited = set()
@@ -44,19 +44,58 @@ def solve_1(lines):
 
     coords = [(pos[1], pos[0]) for (pos, _,) in visited]
     total = 0
-    for row in range(grid.height):
-        line = ""
-        for col in range(grid.width):
-            if (row, col) in coords:
-                line += "#"
-                total += 1
-            else:
-                line += "."
-        print(line)
-    print(total)
+    if verbose:
+        for row in range(grid.height):
+            line = ""
+            for col in range(grid.width):
+                if (row, col) in coords:
+                    line += "#"
+                    total += 1
+                else:
+                    line += "."
+            print(line)
+        print(total)
+    else:
+        for row in range(grid.height):
+            for col in range(grid.width):
+                if (row, col) in coords:
+                    total += 1
+    return total
+
+def solve_1(lines):
+    start = (0, 0,), S
+    run(lines, start, verbose=True)
+
 
 def solve_2(lines):
-    pass
+    nums = []
+    # east
+    for y in range(len(lines)):
+        start = (0, y,), E
+        t = run(lines, start)
+        nums.append(t)
+
+    # west
+    xmax = len(lines[0]) - 1
+    for y in range(len(lines)):
+        start = (xmax, y,), W
+        t = run(lines, start)
+        nums.append(t)
+
+    # south
+    for x in range(xmax):
+        start = (x, 0,), S
+        t = run(lines, start)
+        nums.append(t)
+
+    # north
+    for x in range(xmax):
+        start = (x, len(lines) - 1,), N
+        t = run(lines, start)
+        nums.append(t)
+    print(nums)
+    print(max(nums))
+
 
 DAY = 16
 test = False
@@ -78,5 +117,5 @@ else:
     filename = "../data/day-{:02d}.txt".format(DAY)
 
 lines = read_lines(filename)
-solve_1(lines)
-# solve_2(lines)
+# solve_1(lines)
+solve_2(lines)
