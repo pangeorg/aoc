@@ -37,7 +37,8 @@ class LineGrid:
         """
         lines should come from 'read_lines'
         """
-        self.lines = lines
+        # mae each char its own point in the grid
+        self.lines = [[c for c in l] for l in lines]
         self.width = len(lines[0])
         self.height = len(lines)
 
@@ -45,11 +46,19 @@ class LineGrid:
         """ assumes x, y coordinates where 0,0 is top-left corner"""
         return self.lines[coords[1]][coords[0]]
 
+    def __setitem__(self, coords, value):
+        """ assumes x, y coordinates where 0,0 is top-left corner"""
+        print(coords)
+        self.lines[coords[1]][coords[0]] = value
+
     def __repr__(self):
-        return f"LineGrid({self.width, self.height})\n" + "\n".join(self.lines)
+        return f"LineGrid({self.width, self.height})\n" + self.__str__()
 
     def __str__(self):
-        return "\n".join(self.lines)
+        return "\n".join(["".join(l) for l in self.lines])
+
+    def has_point(self, point):
+        return 0 <= point[0] < self.width and 0 <= point[1] < self.height
 
     def find(self, condition):
         for x in range(self.width):
