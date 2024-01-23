@@ -4,3 +4,4 @@ coc-settings.json
 .vim
 obj/
 bin/
+data/*.txt
