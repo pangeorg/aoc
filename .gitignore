@@ -5,3 +5,7 @@ coc-settings.json
 obj/
 bin/
 data/*.txt
+data/
+.editorconfig
+.vscode/
+.vs/
