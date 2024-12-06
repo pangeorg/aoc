@@ -27,6 +27,17 @@ def grid_transpose(lines):
 def grid_rotate_right(lines):
     return [list(reversed(x)) for x in zip(*lines)]
 
+def point_rotate_right(point: tuple[int, int]):
+    n = complex(point[0], point[1])
+    n = n * 1j
+    return (int(n.real), int(n.imag))
+
+def point_rotate_left(point: tuple[int, int]):
+    n = complex(point[0], point[1])
+    n = n * -1j
+    return (int(n.real), int(n.imag))
+
+
 def grid_rotate_left(lines):
     return list(reversed([list(x) for x in zip(*lines)]))
 
@@ -40,9 +51,11 @@ class LineGrid:
         lines should come from 'read_lines'
         """
         # mae each char its own point in the grid
-        self.lines = [[c for c in l] for l in lines]
+        self.lines = [[c for c in line] for line in lines]
         self.width = len(lines[0])
         self.height = len(lines)
+        self.rows = self.height
+        self.cols = self.width
 
     def __getitem__(self, coords):
         """ assumes x, y coordinates where 0,0 is top-left corner"""
@@ -50,7 +63,6 @@ class LineGrid:
 
     def __setitem__(self, coords, value):
         """ assumes x, y coordinates where 0,0 is top-left corner"""
-        print(coords)
         self.lines[coords[1]][coords[0]] = value
 
     def __repr__(self):
@@ -65,15 +77,15 @@ class LineGrid:
     def find(self, condition):
         for x in range(self.width):
             for y in range(self.height):
-                if condition(self[x, y]):
+                if condition(self[(x, y)]):
                     return x, y
-        return False
+        return None
 
     def find_all(self, condition):
         r = []
         for x in range(self.width):
             for y in range(self.height):
-                if condition(self[x, y]):
+                if condition(self[(x, y)]):
                     r.append((x, y, ))
         return r
 

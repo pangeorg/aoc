@@ -1,60 +1,83 @@
-import os
-import sys
-import functools
-
-path = os.path.abspath(os.path.dirname(__file__) + "/..")
-sys.path.append(path)
-
-def unsorted(update, rules):
-    needs_sorting = False
-    for i in range(len(update)):
-        for j in range(i+1, len(update)):
-            cmp1 = update[i]
-            cmp2 = update[j]
-            for rule in rules:
-                if cmp1 in rule and cmp2 in rule:
-                    if rule[0] != cmp1:
-                        needs_sorting = True
-    return needs_sorting
-
+from concurrent import futures
+import utils
 
 def solve_1():
-    import utils
+    lines = utils.read_lines("../input/sample06.txt")
+    grid = utils.LineGrid(lines)
+    start = grid.find(lambda x: x == "v" or x == "<" or x == "^" or x == ">")
 
-    lines = utils.read_lines_groups("sample.txt")
-    rules = [list(map(int, rule.split('|'))) for rule in lines[0]]
-    updates = [list(map(int, rule.split(','))) for rule in lines[1]]
+    if start is None:
+        raise Exception("aaaa")
 
-    result = 0
-    for update in updates:
-        if not unsorted(update, rules):
-            result += update[len(update)//2]
+    direction: tuple[int, int] = (0, 0)
+    match grid[start]:
+        case "v":
+            direction = utils.S
+        case "^":
+            direction = utils.N
+        case ">":
+            direction = utils.E
+        case "<":
+            direction = utils.W
+
+    visited = set([start])
+    while True:
+        grid[start] = "X"
+        next_pos = utils.take_step(start, direction)
+        if not grid.has_point(next_pos):
+            break
+        if grid[next_pos] == "#":
+            direction = utils.point_rotate_right(direction)
+            next_pos = utils.take_step(start, direction)
+        start = next_pos
+        visited.add(start)
+
+    print(str(grid))
+    print(len(visited))
+
+def walk(p, d, grid, turnPos):
+    visited = set()
+    while True:
+        visited.add((p, d))
+        next = utils.take_step(p, d)
+        if not grid.has_point(next):
+            return 0
+        if grid[next] == "#" or next == turnPos:
+            d = utils.point_rotate_right(d)
+        else:
+            p = next
+        if ((p, d)) in visited:
+            return 1
 
 def solve_2():
-    import utils
+    lines = utils.read_lines("../input/day06.txt")
+    grid = utils.LineGrid(lines)
+    start = grid.find(lambda x: x == "v" or x == "<" or x == "^" or x == ">")
 
-    lines = utils.read_lines_groups("part1.txt")
-    rules = [list(map(int, rule.split('|'))) for rule in lines[0]]
-    updates = [list(map(int, rule.split(','))) for rule in lines[1]]
+    if start is None:
+        raise Exception("aaaa")
 
-    rules_d = {}
-    for r in rules:
-        rules_d[tuple(r)] = -1
-        rules_d[(r[1], r[0])] = 1
+    direction: tuple[int, int] = (0, 0)
+    match grid[start]:
+        case "v":
+            direction = utils.S
+        case "^":
+            direction = utils.N
+        case ">":
+            direction = utils.E
+        case "<":
+            direction = utils.W
 
-    def cmp(x1, x2):
-        r = rules_d.get((x1, x2), 0)
-        if r is None:
-            return 0
-        return r
+    obstructions = 0
+    for x in range(grid.width):
+        for y in range(grid.height):
+            pos = (x, y)
+            if grid[pos] != ".":
+                continue
+            turnpos = pos
+            obstructions += walk(start, direction, grid, turnpos)
 
-    result = 0
-    for update in updates:
-        if unsorted(update, rules):
-            u = sorted(update, key=functools.cmp_to_key(cmp))
-            result += u[len(u)//2]
-            print(update, u)
-    print(result)
+    print(obstructions)
 
 
 solve_2()
