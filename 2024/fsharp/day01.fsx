@@ -1,7 +1,7 @@
 open System.IO;
 open System;
 
-let lines = File.ReadAllLines("../input/day01.txt")
+let lines = File.ReadAllLines("../input/sample01.txt")
 
 let part1 (lines: string array) = 
     let aToTuple (x: array<int>) = x[0], x[1]

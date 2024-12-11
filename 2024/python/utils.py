@@ -69,7 +69,7 @@ class LineGrid:
         return f"LineGrid({self.width, self.height})\n" + self.__str__()
 
     def __str__(self):
-        return "\n".join(["".join(l) for l in self.lines])
+        return "\n".join(["".join(str(l)) for l in self.lines])
 
     def has_point(self, point):
         return 0 <= point[0] < self.width and 0 <= point[1] < self.height
