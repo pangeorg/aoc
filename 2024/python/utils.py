@@ -44,6 +44,9 @@ def grid_rotate_left(lines):
 def take_step(point: tuple[int, int], direction: tuple[int, int]):
     return (point[0] + direction[0], point[1] + direction[1],)
 
+def neighbors(point: tuple[int, int]):
+    return [take_step(point, dir) for dir in [N, W, S, E]]
+
 
 class LineGrid:
     def __init__(self, lines):
