@@ -4,6 +4,19 @@ NE, NW, SE, SW = (1, -1), (-1, -1), (1, 1), (-1, 1)
 
 DIRS = [N, S, E, W, NE, NW, SE, SW]
 
+REVERSE_DIR = {
+    N: S,
+    S: N,
+    W: E,
+    E: W,
+    NE: SW,
+    SW: NE,
+    SE: NW,
+    SW: NE,
+    NW: SE,
+    NE: SW,
+}
+
 def read_filestr(filename):
     """
     Read whole file as str
@@ -72,7 +85,11 @@ class LineGrid:
         return f"LineGrid({self.width, self.height})\n" + self.__str__()
 
     def __str__(self):
-        return "\n".join(["".join(str(l)) for l in self.lines])
+        return "\n".join(["".join(str(line)) for line in self.lines])
+
+    def print(self):
+        for line in self.lines:
+            print("".join(line))
 
     def has_point(self, point):
         return 0 <= point[0] < self.width and 0 <= point[1] < self.height
@@ -94,11 +111,31 @@ class LineGrid:
 
     def transpose(self):
         t = grid_transpose(self.lines)
-        try:
-            return LineGrid(t)
-        except:
-            print("Cannot transpose")
-            raise
+        return LineGrid(t)
+
+    def get_region(self, start, condition=None):
+        """Flood fill to get region with same entry in start"""
+        from collections import deque
+        if not condition:
+            condition = lambda p: self[p] == self[start]
+        result = set()
+        visited = set()
+        queue = deque([start])
+        while True:
+            parcel = queue.popleft()
+            visited.add(parcel)
+            if not self.has_point(parcel):
+                continue
+            if condition(parcel):
+                result.add(parcel)
+                for next in neighbors(parcel):
+                    if not self.has_point(next) or next in visited:
+                        continue
+                    queue.insert(0, next)
+            if len(queue) == 0:
+                break
+
+        return result
 
 
 if __name__ == "__main__":
