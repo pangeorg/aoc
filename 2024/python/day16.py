@@ -44,12 +44,36 @@ def solve1():
     #     grid[p] = "x"
     # grid.print()
 
+def walk(start, dir, grid):
+    from collections import deque
+    q = deque()
+    q.append((start, set(), 0, dir,))
+    found = []
+    while len(q):
+        p, hist, cost, cur_dir = q.popleft()
+
+        if grid[p] == "E":
+            found.append((hist, cost))
+            continue
+
+        for dir in [utils.N, utils.S, utils.E, utils.W]:
+            if dir == utils.REVERSE_DIR[dir]:
+                continue
+            n = utils.take_step(p, dir)
+            if grid[n] == "#" or n in hist:
+                continue
+            if dir == cur_dir:
+                q.append((n, hist.union([n]), cost+1, dir))
+            else:
+                q.append((p, hist.union([]), cost+1000, dir))
+    return found
 
 def solve2():
     grid = utils.LineGrid(utils.read_lines("../input/sample16.txt"))
     start = grid.find(lambda x: x == "S")
     dir = utils.E
-    c = walk2(start, dir, grid)
+    c = walk(start, dir, grid)
+    print(c)
     costs = [a[1] for a in c]
     min_cost = min(costs)
     best = [r for r in c if r[1] == min_cost]
