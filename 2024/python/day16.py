@@ -1,38 +1,63 @@
 import utils
-from collections import deque
+
 
 def walk2(start, dir, grid):
+    from collections import deque
     q = deque()
-    n = utils.take_step(start, dir)
-    visited = set([(start, dir,)])
-    q.append((n, dir, 0,))
+    q.append((start, set([start]), 0, dir,))
     found = []
-    while True:
-        p, prev_dir, cost = q.pop()
+    visited = {}
+    while len(q):
+        p, hist, cost, cur_dir = q.pop()
+
         if grid[p] == "E":
-            found.append(cost)
+            found.append((hist, cost))
             continue
+
+        if (p, cur_dir) in visited and visited[(p, cur_dir)] < cost:
+            continue
+
+        visited[(p, cur_dir)] = cost
+
         for dir in [utils.N, utils.S, utils.E, utils.W]:
-            n = utils.take_step(p, dir)
-            if grid[n] == "#" or (n, dir) in visited:
+            if dir == utils.REVERSE_DIR[cur_dir]:
                 continue
-            print(n, dir)
-            visited.add((n, dir,))
-            if dir == prev_dir:
-                q.append((n, dir, cost+1))
+            n = utils.take_step(p, dir)
+            if grid[n] == "#" or n in hist:
+                continue
+            if dir == cur_dir:
+                q.append((n, hist.union([n]), cost+1, dir))
             else:
-                q.append((n, dir, cost+1001))
-        if len(q) == 0:
-            break
-    return min(found)
+                q.append((p, hist, cost+1000, dir))
+    return found
 
 
 def solve1():
+    grid = utils.LineGrid(utils.read_lines("../input/day16.txt"))
+    start = grid.find(lambda x: x == "S")
+    dir = utils.E
+    c = walk2(start, dir, grid)
+    costs = [a[1] for a in c]
+    min_cost = min(costs)
+    print(min_cost)
+    # for p in c[i][0]:
+    #     grid[p] = "x"
+    # grid.print()
+
+
+def solve2():
     grid = utils.LineGrid(utils.read_lines("../input/sample16.txt"))
     start = grid.find(lambda x: x == "S")
     dir = utils.E
     c = walk2(start, dir, grid)
-    print(c)
+    costs = [a[1] for a in c]
+    min_cost = min(costs)
+    best = [r for r in c if r[1] == min_cost]
+    tiles = {t for r in best for t in r[0]}
+    print(len(tiles))
+    # for p in c[i][0]:
+    #     grid[p] = "x"
+    # grid.print()
 
 
-solve1()
+solve2()
