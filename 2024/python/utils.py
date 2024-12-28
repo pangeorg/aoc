@@ -17,6 +17,7 @@ REVERSE_DIR = {
     NE: SW,
 }
 
+
 def read_filestr(filename):
     """
     Read whole file as str
@@ -24,26 +25,32 @@ def read_filestr(filename):
     with open(filename, 'r') as f:
         return f.read()
 
+
 def read_lines(filename):
     """
     Read lines from file
     """
     return read_filestr(filename).splitlines()
 
+
 def read_lines_groups(filename, pattern="\n\n"):
     blocks = read_filestr(filename).split(pattern)
     return [b.splitlines() for b in blocks]
 
+
 def grid_transpose(lines):
     return list(list(x) for x in zip(*lines))
 
+
 def grid_rotate_right(lines):
     return [list(reversed(x)) for x in zip(*lines)]
+
 
 def point_rotate_right(point: tuple[int, int]):
     n = complex(point[0], point[1])
     n = n * 1j
     return (int(n.real), int(n.imag))
+
 
 def point_rotate_left(point: tuple[int, int]):
     n = complex(point[0], point[1])
@@ -54,11 +61,17 @@ def point_rotate_left(point: tuple[int, int]):
 def grid_rotate_left(lines):
     return list(reversed([list(x) for x in zip(*lines)]))
 
-def take_step(point: tuple[int, int], direction: tuple[int, int]):
-    return (point[0] + direction[0], point[1] + direction[1],)
+
+def take_step(point: tuple[int, int], direction: tuple[int, int], count: int = 1):
+    return (point[0] + direction[0] * count, point[1] + direction[1] * count,)
+
 
 def neighbors(point: tuple[int, int]):
     return [take_step(point, dir) for dir in [N, W, S, E]]
+
+
+def distance_path(p1: tuple[int, int], p2: tuple[int, int]):
+    return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
 
 
 class LineGrid:
@@ -117,7 +130,7 @@ class LineGrid:
         """Flood fill to get region with same entry in start"""
         from collections import deque
         if not condition:
-            condition = lambda p: self[p] == self[start]
+            def condition(p): return self[p] == self[start]
         result = set()
         visited = set()
         queue = deque([start])
