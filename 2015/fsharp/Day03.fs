@@ -2,6 +2,7 @@ module Day03
 
 open System.IO
 open FSharp.Collections
+open Utils
 
 let rec followInstructions (instructions: char list) (pos: int * int) (hist: Set<int * int>) =
     match instructions with
@@ -19,11 +20,6 @@ let rec followInstructions (instructions: char list) (pos: int * int) (hist: Set
 
         followInstructions (xs) (newPos) (updated)
 
-let everyNth n seq =
-    seq
-    |> Seq.mapi (fun i el -> el, i) // Add index to element
-    |> Seq.filter (fun (el, i) -> i % n = 0) // Take every nth element
-    |> Seq.map fst // Drop index from the result
 
 let part1 () =
     let instructions = File.ReadAllText("../input/day03.txt").Trim() |> Seq.toList
