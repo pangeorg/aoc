@@ -32,3 +32,11 @@ let neighbors (pos: int * int) =
         for dir in [ N; S; E; W ] do
             yield move pos dir
     }
+
+let explodeStr (s: string) = [ for c in s -> c ]
+
+/// Converts a list of characters into a string.
+let implodeStr (xs: char list) =
+    let sb = System.Text.StringBuilder(xs.Length)
+    xs |> List.iter (sb.Append >> ignore)
+    sb.ToString()
