@@ -2,23 +2,50 @@
 open Utils
 open System.IO;
 
-let lines = File.ReadAllLines("../input/sample02.txt")
+let lines = File.ReadAllLines("../input/day02.txt")
 let levelsList = 
     lines |> 
     Array.map (fun x -> x.Split(" ") |> Array.map int)
     
+let sgn a = 
+    if a >= 0 then 1
+    else -1
+        
 let isSave (levels: int array) = 
-    let mutable maxDiff = 0
-    let mutable sign = 0
+    let mutable sign = sgn(levels.[0] - levels.[1])
     levels
     |> Seq.pairwise
-    |> Seq.iter (fun (x, y) -> 
-        let diff = (x - y)
-        if abs(diff) > abs(maxDiff) then maxDiff <- diff
-        
+    |> Seq.map (fun (x, y) -> 
+        let d = x - y
+        abs(d) <= 3 && abs(d) >= 1 && sign = sgn(d)
     )
-    maxDiff < 3
+    |> Seq.reduce (fun a b -> a && b)
 
+let isSaveDamped (levels: int array) = 
+    if isSave levels then true
+    else 
+        [1..levels.Length - 1]
+        |> List.map (fun i -> Array.toList(levels.[0..i - 1]) @ Array.toList(levels.[i + 1..]))
+        |> List.map (fun x -> isSave (List.toArray x))
+        |> Seq.reduce (fun a b -> a || b)
     
-let r = isSave [|1; 2; 3; 4; 5; 6; 2; 8; 9; 10|]
-printfn "%b" r
+    
+let part1 = 
+    let total = 
+        levelsList
+        |> Array.filter isSave
+        |> Array.length
+    printfn "%i" total
+
+let part2 = 
+    let total = 
+        levelsList
+        |> Array.filter isSaveDamped
+        |> Array.length
+    // let total = 
+    //     levelsList
+    //     |> Array.map isSaveDamped
+
+    printfn "%A" total
+    
+part2
