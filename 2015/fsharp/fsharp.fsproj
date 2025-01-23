@@ -7,8 +7,7 @@
 
   <ItemGroup>
     <Compile Include="Utils.fs" />
-    <Compile Include="Day*.fs" />
-    <Compile Include="Program.fs" />
+    <Compile Include="Day*.fsx" />
   </ItemGroup>
 
 </Project>
