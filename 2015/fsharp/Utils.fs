@@ -40,3 +40,10 @@ let implodeStr (xs: char list) =
     let sb = System.Text.StringBuilder(xs.Length)
     xs |> List.iter (sb.Append >> ignore)
     sb.ToString()
+
+
+/// similar to pythons itertools.permutate(list, len(list))
+let rec permute (list: 'a list) =
+    match list with
+    | [] -> [ [] ]
+    | x :: xs -> List.collect (fun perm -> [ for i in 0 .. List.length perm -> List.insertAt i x perm ]) (permute xs)
