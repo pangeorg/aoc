@@ -33,6 +33,8 @@ let neighbors (pos: int * int) =
             yield move pos dir
     }
 
+let inline intToChar i = char (i + int '0')
+
 let explodeStr (s: string) = [ for c in s -> c ]
 
 /// Converts a list of characters into a string.
