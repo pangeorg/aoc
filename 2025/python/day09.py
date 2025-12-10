@@ -29,7 +29,8 @@ test_data = """
 """.strip()
 
 
-Point = tuple[float, float]
+Point = tuple[int, int]
+Pointf = tuple[float, float]
 
 
 def parse_data(lines: list[str]) -> list[Point]:
@@ -55,7 +56,7 @@ def part01():
     print(max_area)
 
 
-def intersect_segment(p1: Point, p2: Point, p3: Point, p4: Point) -> bool:
+def intersect_segment(p1: Pointf, p2: Pointf, p3: Pointf, p4: Pointf) -> bool:
     x, y = 0, 1
     x0, x1, x2, x3 = p1[x], p2[x], p3[x], p4[x]
     y0, y1, y2, y3 = p1[y], p2[y], p3[y], p4[y]
@@ -324,13 +325,36 @@ def is_fully_contained(
     return True
 
 
-def part2_opt(data) -> int:
+def test_is_fully():
+    # ...|......
+    # ...|......
+    # .O.|.O....
+    # ...|......
+    # ...|......
+    edges = [(4, 1, 4, 5)]
+    p1 = (2, 3)
+    p2 = (6, 3)
+    min_x, max_x = (p1[0], p2[0]) if p1[0] < p2[0] else (p2[0], p1[0])
+    min_y, max_y = (p1[1], p2[1]) if p1[1] < p2[1] else (p2[1], p1[1])
+    assert not is_fully_contained(edges, min_x, min_y, max_x, max_y)
+
+    # ...|......
+    # ...|......
+    # ...|.O..O.
+    # ...|......
+    # ...|......
+    edges = [(4, 1, 4, 5)]
+    p1 = (8, 3)
+    p2 = (6, 3)
+    min_x, max_x = (p1[0], p2[0]) if p1[0] < p2[0] else (p2[0], p1[0])
+    min_y, max_y = (p1[1], p2[1]) if p1[1] < p2[1] else (p2[1], p1[1])
+    assert is_fully_contained(edges, min_x, min_y, max_x, max_y)
+
+
+def part2_opt(data: list[str]) -> int:
     from itertools import combinations
 
-    tiles = []
-    for line in data:
-        parts = line.split(",")
-        tiles.append((int(parts[0]), int(parts[1])))
+    tiles = parse_data(data)
 
     edges = []
     n = len(tiles)
@@ -352,26 +376,25 @@ def part2_opt(data) -> int:
         )
     )
 
-    result = 0
+    max_area = 0
 
     for p1, p2 in combinations(tiles, 2):
-        area = (abs(p1[0] - p2[0]) + 1) * (abs(p1[1] - p2[1]) + 1)
-        if area <= result:
+        carea = area(p1, p2)
+        if carea <= max_area:
             continue
 
         min_x, max_x = (p1[0], p2[0]) if p1[0] < p2[0] else (p2[0], p1[0])
         min_y, max_y = (p1[1], p2[1]) if p1[1] < p2[1] else (p2[1], p1[1])
 
         if is_fully_contained(edges, min_x, min_y, max_x, max_y):
-            result = area
+            max_area = carea
 
-    print(result)
-    return result
+    return max_area
 
 
 def part2():
     data = example.splitlines()
-    data = read_lines("../data/day09.txt")
+    # data = read_lines("../data/day09.txt")
     part2_opt(data)
 
 
